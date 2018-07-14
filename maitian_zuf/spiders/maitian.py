@@ -14,29 +14,29 @@ class MaitianSpider(scrapy.Spider):
     allowed_domains = ['bj.maitian.cn']
     start_urls = ['http://bj.maitian.cn/zfall', 'http://bj.maitian.cn/esfall']
 
-    ua = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
-    custom_settings = {
-        'CONCURRENT_REQUESTS': 64,
-        'DOWNLOAD_DELAY': 0,
-        'COOKIES_ENABLED': False,
-        # 'LOG_LEVEL': 'INFO',
-        'RETRY_TIMES': 15,
-        'DEFAULT_REQUEST_HEADERS': {
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-            'accept-encoding': 'gzip, deflate',
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            'cache-control': 'max-age=0',
-        },
-        'MONGO_URI': 'localhost:27017',
-        'MONGO_DATABASE': 'maitian',
-        'PROXY_URL': 'http://localhost:5555/random',
-        'ITEM_PIPELINES': {
-            'maitian_zuf.pipelines.MongoPipeline': 301,
-        },
-        'DOWNLOADER_MIDDLEWARES': {
-            # 'maitian_zuf.middlewares.ProxyMiddleware': 543,
-        },
-    }
+    # ua = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
+    # custom_settings = {
+    #     'CONCURRENT_REQUESTS': 64,
+    #     'DOWNLOAD_DELAY': 0,
+    #     'COOKIES_ENABLED': False,
+    #     # 'LOG_LEVEL': 'INFO',
+    #     'RETRY_TIMES': 15,
+    #     'DEFAULT_REQUEST_HEADERS': {
+    #         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    #         'accept-encoding': 'gzip, deflate',
+    #         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    #         'cache-control': 'max-age=0',
+    #     },
+    #     'MONGO_URI': 'localhost:27017',
+    #     'MONGO_DATABASE': 'maitian',
+    #     'PROXY_URL': 'http://localhost:5555/random',
+    #     'ITEM_PIPELINES': {
+    #         'maitian_zuf.pipelines.MongoPipeline': 301,
+    #     },
+    #     'DOWNLOADER_MIDDLEWARES': {
+    #         # 'maitian_zuf.middlewares.ProxyMiddleware': 543,
+    #     },
+    # }
 
     def parse(self, response):
         zf_url = response.url
@@ -49,14 +49,14 @@ class MaitianSpider(scrapy.Spider):
                 det_url = '/{}/{}'.format(url[-2], url[-1])
                 # print(response.urljoin(det_url))
                 yield Request(url=response.urljoin(det_url), callback=self.parse_zf,
-                              headers={'User-Agent': self.ua, 'Referer': response.url},
+                              headers={'Referer': response.url},
                               meta={'zf_url': response.urljoin(det_url)})
 
             zf_next_page = response.xpath('//*[@id="paging"]/a[last()-1]/@href').extract_first()
             if zf_next_page is not None:
                 zf_next_page = response.urljoin(zf_next_page)
                 yield Request(url=zf_next_page, callback=self.parse,
-                              headers={'User-Agent': self.ua, 'Referer': response.url})
+                              headers={'Referer': response.url})
 
         # 二手房
         if response.url == es_url:
@@ -65,14 +65,14 @@ class MaitianSpider(scrapy.Spider):
                 det_url = '/{}/{}'.format(url[-2], url[-1])
                 # print(response.urljoin(det_url))
                 yield Request(url=response.urljoin(det_url), callback=self.parse_es,
-                              headers={'User-Agent': self.ua, 'Referer': response.url},
+                              headers={'Referer': response.url},
                               meta={'es_url': response.urljoin(det_url)})
 
             es_next_page = response.xpath('//*[@id="paging"]/a[last()-1]/@href').extract_first()
             if es_next_page is not None:
                 es_next_page = response.urljoin(es_next_page)
                 yield Request(url=es_next_page, callback=self.parse,
-                              headers={'User-Agent': self.ua, 'Referer': response.url})
+                              headers={'Referer': response.url})
 
     def parse_zf(self, response):
         zf_item = MaitianZufItem()
